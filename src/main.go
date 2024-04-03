@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-url-shortener/src/controllers"
 	"go-url-shortener/src/database"
 	"log"
 
@@ -25,6 +26,7 @@ func main() {
 			"message": "pong",
 		})
 	})
+	r.POST("/users", controllers.CreateUserController)
 
 	r.Run()
 }
