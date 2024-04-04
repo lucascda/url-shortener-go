@@ -1,8 +1,8 @@
 package main
 
 import (
-	"go-url-shortener/src/controllers"
 	"go-url-shortener/src/database"
+	"go-url-shortener/src/factories"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ func main() {
 			"message": "pong",
 		})
 	})
-	r.POST("/users", controllers.CreateUserController)
+	r.POST("/users", factories.UserController.CreateUser)
 
 	r.Run()
 }

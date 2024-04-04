@@ -1,37 +1,28 @@
 package controllers
 
 import (
-	"go-url-shortener/src/database"
 	"go-url-shortener/src/models"
-	"log"
+	"go-url-shortener/src/services"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUserController(c *gin.Context) {
+type UserController struct {
+	userService services.UserService
+}
+
+func NewUserController(service services.UserService) *UserController {
+	return &UserController{service}
+}
+
+func (userController *UserController) CreateUser(c *gin.Context) {
 	body := models.CreateUser{}
-
 	c.Bind(&body)
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	result, err := userController.userService.CreateUser(&body)
 	if err != nil {
-		log.Fatal("Error encrypting password")
-	}
-	body.Password = string(hash[:])
-	user := &models.User{
-		Email:    body.Email,
-		Password: body.Password,
-		Name:     body.Name,
-	}
-
-	result := database.DB.Create(&user)
-	if result.Error != nil {
 		c.Status(400)
 		return
 	}
+	c.Status(result)
 
-	c.JSON(200, gin.H{
-		"data": user,
-	})
 }
