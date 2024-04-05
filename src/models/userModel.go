@@ -10,8 +10,8 @@ type User struct {
 }
 
 type CreateUser struct {
-	Email                string
-	Name                 string
-	Password             string
-	PasswordConfirmation string
+	Email                string `validate:"required,`
+	Name                 string `validate:"required"`
+	Password             string `validate:"required"`
+	PasswordConfirmation string `validate:"required"`
 }
