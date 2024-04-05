@@ -3,6 +3,7 @@ package controllers
 import (
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/services"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,11 +19,18 @@ func NewUserController(service services.UserService) *UserController {
 func (userController *UserController) CreateUser(c *gin.Context) {
 	body := models.CreateUser{}
 	c.Bind(&body)
-	result, err := userController.userService.CreateUser(&body)
+	err := userController.userService.CreateUser(&body)
 	if err != nil {
-		c.Status(400)
-		return
+		if err.Error() == "Email already exists" {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+			return
+		}
+		if err.Error() == "Error creating user in db" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 	}
-	c.Status(result)
+
+	c.Status(201)
+	return
 
 }
