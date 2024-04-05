@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	apierrors "go-url-shortener/src/errors"
+
 	"go-url-shortener/src/database"
 	"go-url-shortener/src/models"
 	"log"
@@ -23,7 +25,7 @@ func (svc UserService) CreateUser(createUserInput *models.CreateUser) error {
 	var user models.User
 	result := database.DB.Where("email = ?", createUserInput.Email).First(&user)
 	if result.RowsAffected != 0 {
-		return errors.New("Email already exists")
+		return apierrors.UserAlreadyExistsError{}
 
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(createUserInput.Password), bcrypt.DefaultCost)

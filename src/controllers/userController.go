@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/services"
 	"net/http"
@@ -21,7 +22,7 @@ func (userController *UserController) CreateUser(c *gin.Context) {
 	c.Bind(&body)
 	err := userController.userService.CreateUser(&body)
 	if err != nil {
-		if err.Error() == "Email already exists" {
+		if _, ok := err.(apierrors.UserAlreadyExistsError); ok {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
