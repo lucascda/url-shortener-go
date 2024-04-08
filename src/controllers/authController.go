@@ -19,8 +19,11 @@ func NewAuthController(s services.AuthService) *AuthController {
 func (controller *AuthController) SignIn(c *gin.Context) {
 	body := &models.SignInInput{}
 	c.Bind(body)
-	if err := controller.service.SignIn(body); err != nil {
-
+	access_token, err := controller.service.SignIn(body)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
+	c.JSON(200, gin.H{"access_token": access_token})
+	return
 }
