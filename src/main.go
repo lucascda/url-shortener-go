@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 )
 
@@ -18,8 +19,8 @@ func init() {
 }
 
 func main() {
-
-	userController := factories.InitServices(database.DB)
+	v := validator.New(validator.WithRequiredStructEnabled())
+	userController := factories.InitServices(database.DB, v)
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

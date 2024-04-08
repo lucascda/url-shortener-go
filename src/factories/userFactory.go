@@ -10,8 +10,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func InitServices(db *gorm.DB) *controllers.UserController {
-	v := validator.New(validator.WithRequiredStructEnabled())
+func InitServices(db *gorm.DB, v *validator.Validate) *controllers.UserController {
+
 	userValidator := validators.NewUserValidator(v)
 	userService := services.NewUserService(*userValidator, db)
 	UserController := controllers.NewUserController(*userService)
