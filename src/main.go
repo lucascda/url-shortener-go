@@ -15,18 +15,18 @@ func init() {
 		log.Fatal("Error loading .env file")
 	}
 	database.ConnectToDB()
-
 }
 
 func main() {
 
+	userController := factories.InitServices(database.DB)
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-	r.POST("/users", factories.UserController.CreateUser)
+	r.POST("/users", userController.CreateUser)
 
 	r.Run()
 }

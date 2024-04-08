@@ -5,6 +5,8 @@ import (
 	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/validators.go"
 
+	"gorm.io/gorm"
+
 	"go-url-shortener/src/database"
 	"go-url-shortener/src/models"
 	"log"
@@ -12,27 +14,26 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userService interface {
-	CreateUser()
-}
-
 type UserService struct {
 	validator validators.UserValidator
+	db        *gorm.DB
 }
 
-func NewUserService(v validators.UserValidator) *UserService {
-	return &UserService{v}
+func NewUserService(v validators.UserValidator, db *gorm.DB) *UserService {
+	return &UserService{v, db}
 }
 
-func (svc UserService) CreateUser(createUserInput *models.CreateUser) error {
+func (svc *UserService) CreateUser(createUserInput *models.CreateUser) error {
+
 	if err := svc.validator.ValidateCreateUser(createUserInput); err != nil {
 
 		return err
 	}
 
 	var user models.User
-	result := database.DB.Where("email = ?", createUserInput.Email).First(&user)
+	result := svc.db.Where("email = ?", createUserInput.Email).First(&user)
 	if result.RowsAffected != 0 {
+
 		return apierrors.UserAlreadyExistsError{}
 
 	}
