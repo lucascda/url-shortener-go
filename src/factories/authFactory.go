@@ -12,7 +12,8 @@ import (
 
 func InitAuthController(db *gorm.DB, v *validator.Validate) *controllers.AuthController {
 	authValidator := validators.NewAuthValidator(v)
-	authService := services.NewAuthService(db, *authValidator)
+	jwtService := services.NewJwtService()
+	authService := services.NewAuthService(db, *authValidator, *jwtService)
 	authController := controllers.NewAuthController(*authService)
 	return authController
 }
