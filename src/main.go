@@ -21,6 +21,7 @@ func init() {
 func main() {
 	v := validator.New(validator.WithRequiredStructEnabled())
 	userController := factories.InitServices(database.DB, v)
+	authController := factories.InitAuthController(database.DB, v)
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -28,6 +29,7 @@ func main() {
 		})
 	})
 	r.POST("/users", userController.CreateUser)
+	r.POST("/signin", authController.SignIn)
 
 	r.Run()
 }
