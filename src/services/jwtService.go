@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,7 +21,7 @@ func NewJwtService() *JwtService {
 
 func (s *JwtService) ParseToken(inputToken string) (jwt.Claims, bool) {
 	token, err := jwt.Parse(inputToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte("random_string"), nil
+		return []byte(os.Getenv("jwt_secret")), nil
 	})
 	if err != nil || !token.Valid {
 		return nil, false

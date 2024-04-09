@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/validators.go"
+	"os"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -37,7 +38,7 @@ func (s *AuthService) SignIn(signInInput *models.SignInInput) (string, error) {
 	}
 
 	claims := s.jwtService.SetClaims(signInInput.Email, 1)
-	access_token, err := s.jwtService.GenerateToken(claims, []byte("random_string"))
+	access_token, err := s.jwtService.GenerateToken(claims, []byte(os.Getenv("jwt_secret")))
 	if err != nil {
 		return "nil", err
 	}
