@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-url-shortener/src/common"
 	"go-url-shortener/src/database"
 	"go-url-shortener/src/factories"
 	"log"
@@ -31,5 +32,10 @@ func main() {
 	r.POST("/users", userController.CreateUser)
 	r.POST("/signin", authController.SignIn)
 
+	protected := r.Group("/protected")
+	protected.Use(common.JwtAuthMiddleware())
+	{
+		protected.GET("", userController.Profile)
+	}
 	r.Run()
 }

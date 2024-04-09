@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"go-url-shortener/src/common"
+	"go-url-shortener/src/database"
 	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/services"
@@ -17,6 +18,22 @@ type UserController struct {
 
 func NewUserController(service services.UserService) *UserController {
 	return &UserController{service}
+}
+
+func (userController *UserController) Profile(c *gin.Context) {
+	issuer, exists := c.Get("issuer")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Can't find issuer in request"})
+		return
+	}
+	user := &models.User{}
+	result := database.DB.Where("email = ?", issuer).First(&user)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Cant find user"})
+		return
+	}
+	c.JSON(200, gin.H{"me": user.ID})
+	return
 }
 
 func (userController *UserController) CreateUser(c *gin.Context) {

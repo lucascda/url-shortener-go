@@ -18,6 +18,17 @@ func NewJwtService() *JwtService {
 	return &JwtService{}
 }
 
+func (s *JwtService) ParseToken(inputToken string) (jwt.Claims, bool) {
+	token, err := jwt.Parse(inputToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte("random_string"), nil
+	})
+	if err != nil || !token.Valid {
+		return nil, false
+	}
+
+	return token.Claims, true
+}
+
 func (s *JwtService) SetClaims(email string, exp_duration int) *MyCustomClaims {
 	return &MyCustomClaims{
 		jwt.RegisteredClaims{
