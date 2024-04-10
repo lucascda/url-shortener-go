@@ -41,8 +41,8 @@ func (s *UserService) CreateUser(createUserInput *models.CreateUser) error {
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(createUserInput.Password), bcrypt.DefaultCost)
 	if err != nil {
-		s.logger.Infow("failed to encrypt password", "email", createUserInput.Email)
-		return errors.New("failed encrypting password")
+		s.logger.Errorw("failed to encrypt password", "email", createUserInput.Email)
+		return errors.New(apierrors.InternalServerError)
 	}
 	createUserInput.Password = string(hash[:])
 	user = models.User{
@@ -54,9 +54,10 @@ func (s *UserService) CreateUser(createUserInput *models.CreateUser) error {
 	result = database.DB.Create(&user)
 	if result.Error != nil {
 		s.logger.Errorf("failed to save user in database", "email", createUserInput.Email)
-		return errors.New("Error creating user in db")
+		return errors.New(apierrors.InternalServerError)
 	}
 
+	s.logger.Infow("created new user", "email", createUserInput.Email)
 	return nil
 
 }
