@@ -5,41 +5,44 @@ import (
 	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/validators.go"
 
+	"go.uber.org/zap"
+
 	"gorm.io/gorm"
 
 	"go-url-shortener/src/database"
 	"go-url-shortener/src/models"
-	"log"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
+	logger    *zap.SugaredLogger
 	validator validators.UserValidator
 	db        *gorm.DB
 }
 
-func NewUserService(v validators.UserValidator, db *gorm.DB) *UserService {
-	return &UserService{v, db}
+func NewUserService(l *zap.SugaredLogger, v validators.UserValidator, db *gorm.DB) *UserService {
+	return &UserService{l, v, db}
 }
 
-func (svc *UserService) CreateUser(createUserInput *models.CreateUser) error {
+func (s *UserService) CreateUser(createUserInput *models.CreateUser) error {
 
-	if err := svc.validator.ValidateCreateUser(createUserInput); err != nil {
+	if err := s.validator.ValidateCreateUser(createUserInput); err != nil {
 
 		return err
 	}
 
 	var user models.User
-	result := svc.db.Where("email = ?", createUserInput.Email).First(&user)
+	result := s.db.Where("email = ?", createUserInput.Email).First(&user)
 	if result.RowsAffected != 0 {
-
+		s.logger.Infow("user already exists", "email", createUserInput.Email)
 		return apierrors.UserAlreadyExistsError{}
 
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(createUserInput.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatal("Error encrypting password")
+		s.logger.Infow("failed to encrypt password", "email", createUserInput.Email)
+		return errors.New("failed encrypting password")
 	}
 	createUserInput.Password = string(hash[:])
 	user = models.User{
@@ -50,6 +53,7 @@ func (svc *UserService) CreateUser(createUserInput *models.CreateUser) error {
 
 	result = database.DB.Create(&user)
 	if result.Error != nil {
+		s.logger.Errorf("failed to save user in database", "email", createUserInput.Email)
 		return errors.New("Error creating user in db")
 	}
 

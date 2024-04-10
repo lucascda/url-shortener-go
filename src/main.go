@@ -24,7 +24,7 @@ func init() {
 func main() {
 
 	v := validator.New(validator.WithRequiredStructEnabled())
-	userController := factories.InitServices(database.DB, v)
+	userController := factories.InitServices(common.Logger, database.DB, v)
 	authController := factories.InitAuthController(common.Logger, database.DB, v)
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {

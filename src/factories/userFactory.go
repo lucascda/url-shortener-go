@@ -5,15 +5,17 @@ import (
 	"go-url-shortener/src/services"
 	"go-url-shortener/src/validators.go"
 
+	"go.uber.org/zap"
+
 	"gorm.io/gorm"
 
 	"github.com/go-playground/validator/v10"
 )
 
-func InitServices(db *gorm.DB, v *validator.Validate) *controllers.UserController {
+func InitServices(l *zap.SugaredLogger, db *gorm.DB, v *validator.Validate) *controllers.UserController {
 
 	userValidator := validators.NewUserValidator(v)
-	userService := services.NewUserService(*userValidator, db)
+	userService := services.NewUserService(l, *userValidator, db)
 	UserController := controllers.NewUserController(*userService)
 	return UserController
 }
