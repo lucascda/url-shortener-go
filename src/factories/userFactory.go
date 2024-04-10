@@ -16,6 +16,6 @@ func InitServices(l *zap.SugaredLogger, db *gorm.DB, v *validator.Validate) *con
 
 	userValidator := validators.NewUserValidator(v)
 	userService := services.NewUserService(l, *userValidator, db)
-	UserController := controllers.NewUserController(*userService)
+	UserController := controllers.NewUserController(l, *userService)
 	return UserController
 }

@@ -10,14 +10,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 type UserController struct {
+	logger      *zap.SugaredLogger
 	userService services.UserService
 }
 
-func NewUserController(service services.UserService) *UserController {
-	return &UserController{service}
+func NewUserController(l *zap.SugaredLogger, service services.UserService) *UserController {
+	return &UserController{l, service}
 }
 
 func (controller *UserController) Profile(c *gin.Context) {
@@ -48,6 +50,7 @@ func (controller *UserController) CreateUser(c *gin.Context) {
 		}
 
 		if _, ok := err.(validator.ValidationErrors); ok {
+			controller.logger.Infof("failed validation")
 			var validationErrors []common.ValidationError
 			for _, err := range err.(validator.ValidationErrors) {
 				validationError := common.NewValidationError(err.StructField(), err.Error(), err.Tag())
@@ -63,13 +66,13 @@ func (controller *UserController) CreateUser(c *gin.Context) {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
-		if err.Error() == "Error creating user in db" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+
 	}
 
 	c.Status(201)
+
 	return
 
 }
