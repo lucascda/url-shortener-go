@@ -36,13 +36,15 @@ func (s *AuthService) SignIn(signInInput *models.SignInInput) (string, error) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(signInInput.Password)); err != nil {
+		s.logger.Infow("failed comparing passwords", "user", user.ID, "email", user.Email)
 		return "", errors.New("Unauthorized")
 	}
 
 	claims := s.jwtService.SetClaims(signInInput.Email, 1)
 	access_token, err := s.jwtService.GenerateToken(claims, []byte(os.Getenv("jwt_secret")))
 	if err != nil {
-		return "nil", err
+		s.logger.Infow("failed generating token", "user", user.ID, "email", user.Email)
+		return "", err
 	}
 
 	return access_token, nil
