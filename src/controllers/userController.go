@@ -20,7 +20,7 @@ func NewUserController(service services.UserService) *UserController {
 	return &UserController{service}
 }
 
-func (userController *UserController) Profile(c *gin.Context) {
+func (controller *UserController) Profile(c *gin.Context) {
 	issuer, exists := c.Get("issuer")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Can't find issuer in request"})
@@ -36,10 +36,10 @@ func (userController *UserController) Profile(c *gin.Context) {
 	return
 }
 
-func (userController *UserController) CreateUser(c *gin.Context) {
+func (controller *UserController) CreateUser(c *gin.Context) {
 	body := models.CreateUser{}
 	c.Bind(&body)
-	err := userController.userService.CreateUser(&body)
+	err := controller.userService.CreateUser(&body)
 	if err != nil {
 
 		if _, ok := err.(*validator.InvalidValidationError); ok {
