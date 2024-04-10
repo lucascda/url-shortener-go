@@ -2,23 +2,25 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/validators.go"
 	"os"
+
+	"go.uber.org/zap"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type AuthService struct {
+	logger     *zap.SugaredLogger
 	jwtService JwtService
 	validator  validators.AuthValidator
 	db         *gorm.DB
 }
 
-func NewAuthService(db *gorm.DB, v validators.AuthValidator, jwtService JwtService) *AuthService {
-	return &AuthService{jwtService, v, db}
+func NewAuthService(l *zap.SugaredLogger, db *gorm.DB, v validators.AuthValidator, jwtService JwtService) *AuthService {
+	return &AuthService{l, jwtService, v, db}
 }
 
 func (s *AuthService) SignIn(signInInput *models.SignInInput) (string, error) {
@@ -29,7 +31,7 @@ func (s *AuthService) SignIn(signInInput *models.SignInInput) (string, error) {
 	user := &models.User{}
 	result := s.db.Where("email = ?", signInInput.Email).First(user)
 	if result.RowsAffected == 0 {
-		fmt.Print("PASSOU EMAIL")
+		s.logger.Infow("failed to find user", "email", signInInput.Email)
 		return "", errors.New("Unauthorized")
 	}
 

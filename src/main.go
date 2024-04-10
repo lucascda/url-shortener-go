@@ -12,6 +12,8 @@ import (
 )
 
 func init() {
+	common.Logger = common.InitLogger()
+	common.Logger.Info("Loaded logger")
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -20,9 +22,10 @@ func init() {
 }
 
 func main() {
+
 	v := validator.New(validator.WithRequiredStructEnabled())
 	userController := factories.InitServices(database.DB, v)
-	authController := factories.InitAuthController(database.DB, v)
+	authController := factories.InitAuthController(common.Logger, database.DB, v)
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
