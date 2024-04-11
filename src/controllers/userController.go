@@ -36,7 +36,7 @@ func (controller *UserController) Profile(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"me": user.ID})
-	return
+
 }
 
 func (controller *UserController) CreateUser(c *gin.Context) {
@@ -46,7 +46,6 @@ func (controller *UserController) CreateUser(c *gin.Context) {
 	handleError(c, controller.logger, err)
 
 	c.Status(201)
-	return
 
 }
 
