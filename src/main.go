@@ -9,11 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func init() {
 	common.Logger = common.InitLogger()
 	common.Logger.Info("Loaded logger")
+	prometheus.MustRegister(common.RequestsTotal)
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -27,6 +30,9 @@ func main() {
 	userController := factories.InitServices(common.Logger, database.DB, v)
 	authController := factories.InitAuthController(common.Logger, database.DB, v)
 	r := gin.Default()
+	r.Use(common.PrometheusMiddleware())
+
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
