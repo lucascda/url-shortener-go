@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"go-url-shortener/src/common"
 	"go-url-shortener/src/database"
 	apierrors "go-url-shortener/src/errors"
@@ -42,37 +43,36 @@ func (controller *UserController) CreateUser(c *gin.Context) {
 	body := models.CreateUser{}
 	c.Bind(&body)
 	err := controller.userService.CreateUser(&body)
-	if err != nil {
-
-		if _, ok := err.(*validator.InvalidValidationError); ok {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		if _, ok := err.(validator.ValidationErrors); ok {
-			controller.logger.Infof("failed validation")
-			var validationErrors []common.ValidationError
-			for _, err := range err.(validator.ValidationErrors) {
-				validationError := common.NewValidationError(err.StructField(), err.Error(), err.Tag())
-
-				validationErrors = append(validationErrors, *validationError)
-
-			}
-			c.JSON(http.StatusBadRequest, gin.H{"error": validationErrors})
-			return
-		}
-
-		if _, ok := err.(apierrors.UserAlreadyExistsError); ok {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-
-	}
+	handleError(c, controller.logger, err)
 
 	c.Status(201)
-
 	return
 
+}
+
+func handleError(c *gin.Context, logger *zap.SugaredLogger, err error) {
+	switch {
+	case err == nil:
+		return
+	case errors.Is(err, &validator.InvalidValidationError{}):
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	case errors.As(err, &validator.ValidationErrors{}):
+		logger.Infof("failed validation")
+		var validationErrors []common.ValidationError
+		for _, err := range err.(validator.ValidationErrors) {
+			validationError := common.NewValidationError(err.StructField(), err.Error(), err.Tag())
+
+			validationErrors = append(validationErrors, *validationError)
+
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": validationErrors})
+		return
+	case errors.Is(err, apierrors.UserAlreadyExistsError{}):
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 }
