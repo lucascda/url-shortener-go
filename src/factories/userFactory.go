@@ -3,7 +3,7 @@ package factories
 import (
 	"go-url-shortener/src/controllers"
 	"go-url-shortener/src/services"
-	"go-url-shortener/src/validators.go"
+	"go-url-shortener/src/validators"
 
 	"go.uber.org/zap"
 

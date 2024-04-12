@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 	"go-url-shortener/src/models"
-	"go-url-shortener/src/validators.go"
+	"go-url-shortener/src/validators"
 	"os"
 	"strconv"
 

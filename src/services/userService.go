@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 	apierrors "go-url-shortener/src/errors"
-	"go-url-shortener/src/validators.go"
+	"go-url-shortener/src/validators"
 
 	"go.uber.org/zap"
 
