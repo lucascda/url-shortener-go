@@ -4,6 +4,7 @@ import (
 	"errors"
 	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/models"
+	"go-url-shortener/src/validators"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"go.uber.org/zap"
@@ -11,15 +12,20 @@ import (
 )
 
 type UrlService struct {
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	validator validators.UrlValidator
+	db        *gorm.DB
+	logger    *zap.SugaredLogger
 }
 
-func NewUrlService(db *gorm.DB, l *zap.SugaredLogger) *UrlService {
-	return &UrlService{db, l}
+func NewUrlService(v validators.UrlValidator, db *gorm.DB, l *zap.SugaredLogger) *UrlService {
+	return &UrlService{v, db, l}
 }
 
-func (s *UrlService) CreateUrl(userId int, original_url string) error {
+func (s *UrlService) CreateUrl(userId int, createUrl *models.CreateUrl) error {
+	if err := s.validator.ValidateCreateUrl(createUrl); err != nil {
+		return err
+	}
+
 	result := s.db.Where("id = ?", userId).First(&models.User{})
 	if result.RowsAffected == 0 {
 		return errors.New("User don't exists")
@@ -30,7 +36,7 @@ func (s *UrlService) CreateUrl(userId int, original_url string) error {
 		return errors.New(apierrors.InternalServerError)
 	}
 	new_url := models.Url{
-		OriginalUrl: original_url,
+		OriginalUrl: createUrl.Original_url,
 		Hash:        hash,
 		UserId:      userId,
 	}

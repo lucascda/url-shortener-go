@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"errors"
+	"go-url-shortener/src/common"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/services"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
@@ -29,11 +32,16 @@ func (controller *UrlController) CreateUrl(c *gin.Context) {
 		return
 	}
 	id, _ := strconv.Atoi(userId.(string))
-	err := controller.service.CreateUrl(id, body.Original_url)
+	err := controller.service.CreateUrl(id, body)
 	c.Status(http.StatusCreated)
 	controller.logger.Infow("created new url", "userId", userId)
 	switch {
 	case err == nil:
+		return
+	case errors.As(err, &validator.ValidationErrors{}):
+		controller.logger.Infof("failed validation")
+		validationErrors := common.CollectErrors(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": validationErrors})
 		return
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

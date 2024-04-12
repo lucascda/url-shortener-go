@@ -10,5 +10,5 @@ type Url struct {
 }
 
 type CreateUrl struct {
-	Original_url string
+	Original_url string `validate:"required,http_url"`
 }
