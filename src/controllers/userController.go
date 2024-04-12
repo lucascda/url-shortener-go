@@ -44,16 +44,6 @@ func (controller *UserController) CreateUser(c *gin.Context) {
 
 }
 
-func collectErrors(err error) []common.ValidationError {
-	var validationErrors []common.ValidationError
-	for _, err := range err.(validator.ValidationErrors) {
-		validationError := common.NewValidationError(err.StructField(), err.Error(), err.Tag())
-		validationErrors = append(validationErrors, *validationError)
-	}
-
-	return validationErrors
-}
-
 func handleError(c *gin.Context, logger *zap.SugaredLogger, err error) {
 	switch {
 	case err == nil:
@@ -63,7 +53,7 @@ func handleError(c *gin.Context, logger *zap.SugaredLogger, err error) {
 		return
 	case errors.As(err, &validator.ValidationErrors{}):
 		logger.Infof("failed validation")
-		validationErrors := collectErrors(err)
+		validationErrors := common.CollectErrors(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": validationErrors})
 		return
 	case errors.Is(err, apierrors.UserAlreadyExistsError{}):
