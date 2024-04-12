@@ -21,6 +21,19 @@ func NewUrlService(v validators.UrlValidator, db *gorm.DB, l *zap.SugaredLogger)
 	return &UrlService{v, db, l}
 }
 
+func (s *UrlService) GetUrl(hash string) (string, error) {
+
+	url := models.Url{}
+	result := s.db.Where("hash = ?", hash).First(&url)
+	s.logger.Infow("url found", "url", url)
+	if result.RowsAffected == 0 {
+		s.logger.Info("url not found")
+		return "", errors.New("Url not found")
+	}
+
+	return url.OriginalUrl, nil
+}
+
 func (s *UrlService) CreateUrl(userId int, createUrl *models.CreateUrl) error {
 	if err := s.validator.ValidateCreateUrl(createUrl); err != nil {
 		return err

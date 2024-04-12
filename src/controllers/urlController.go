@@ -22,6 +22,16 @@ func NewUrlController(l *zap.SugaredLogger, s services.UrlService) *UrlControlle
 	return &UrlController{l, s}
 }
 
+func (controller *UrlController) RedirectUrl(c *gin.Context) {
+	hash := c.Param("hash")
+
+	url, err := controller.service.GetUrl(hash)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	}
+	c.Redirect(http.StatusMovedPermanently, url)
+}
+
 func (controller *UrlController) CreateUrl(c *gin.Context) {
 	var body *models.CreateUrl
 	c.Bind(&body)

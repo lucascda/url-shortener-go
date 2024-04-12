@@ -48,9 +48,11 @@ func main() {
 		protected.GET("", userController.Profile)
 	}
 	urls := r.Group("/urls")
+	urls.GET("/:hash", urlController.RedirectUrl)
 	urls.Use(common.JwtAuthMiddleware())
 	{
 		urls.POST("", urlController.CreateUrl)
+
 	}
 	r.Run()
 }
