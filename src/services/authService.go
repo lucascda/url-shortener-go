@@ -5,6 +5,7 @@ import (
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/validators.go"
 	"os"
+	"strconv"
 
 	"go.uber.org/zap"
 
@@ -40,7 +41,8 @@ func (s *AuthService) SignIn(signInInput *models.SignInInput) (string, error) {
 		return "", errors.New("Unauthorized")
 	}
 
-	claims := s.jwtService.SetClaims(signInInput.Email, 1)
+	claims := s.jwtService.SetClaims("go-url-api", strconv.Itoa(int(user.ID)), 1)
+
 	access_token, err := s.jwtService.GenerateToken(claims, []byte(os.Getenv("jwt_secret")))
 	if err != nil {
 		s.logger.Infow("failed generating token", "user", user.ID, "email", user.Email)

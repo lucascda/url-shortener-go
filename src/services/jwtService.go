@@ -30,13 +30,14 @@ func (s *JwtService) ParseToken(inputToken string) (jwt.Claims, bool) {
 	return token.Claims, true
 }
 
-func (s *JwtService) SetClaims(email string, exp_duration int) *MyCustomClaims {
+func (s *JwtService) SetClaims(issuer string, userId string, exp_duration int) *MyCustomClaims {
 	return &MyCustomClaims{
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(exp_duration) * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    email,
+			Issuer:    issuer,
+			Subject:   userId,
 		},
 	}
 }

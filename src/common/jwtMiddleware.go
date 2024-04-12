@@ -31,13 +31,14 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		issuer, err := claims.GetIssuer()
+		Logger.Info(claims)
+		sub, err := claims.GetSubject()
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing issuer"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing subject"})
 			c.Abort()
 			return
 		}
-		c.Set("issuer", issuer)
+		c.Set("sub", sub)
 		c.Next()
 	}
 }

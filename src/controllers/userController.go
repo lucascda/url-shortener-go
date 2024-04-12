@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"go-url-shortener/src/common"
-	"go-url-shortener/src/database"
 	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/services"
@@ -24,18 +23,14 @@ func NewUserController(l *zap.SugaredLogger, service services.UserService) *User
 }
 
 func (controller *UserController) Profile(c *gin.Context) {
-	issuer, exists := c.Get("issuer")
+	sub, exists := c.Get("sub")
+	controller.logger.Info("subject", sub)
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Can't find issuer in request"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Can't find subject in request"})
 		return
 	}
-	user := &models.User{}
-	result := database.DB.Where("email = ?", issuer).First(&user)
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Cant find user"})
-		return
-	}
-	c.JSON(200, gin.H{"me": user.ID})
+
+	c.JSON(200, gin.H{"me": sub})
 
 }
 
