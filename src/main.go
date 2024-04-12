@@ -29,6 +29,7 @@ func main() {
 	v := validator.New(validator.WithRequiredStructEnabled())
 	userController := factories.InitServices(common.Logger, database.DB, v)
 	authController := factories.InitAuthController(common.Logger, database.DB, v)
+	urlController := factories.InitUrlController(common.Logger, database.DB)
 	r := gin.Default()
 	r.Use(common.PrometheusMiddleware())
 
@@ -45,6 +46,11 @@ func main() {
 	protected.Use(common.JwtAuthMiddleware())
 	{
 		protected.GET("", userController.Profile)
+	}
+	urls := r.Group("/urls")
+	urls.Use(common.JwtAuthMiddleware())
+	{
+		urls.POST("", urlController.CreateUrl)
 	}
 	r.Run()
 }
