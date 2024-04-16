@@ -38,10 +38,10 @@ func (s *UrlService) ListUrls(userId int) (any, error) {
 
 	result := s.db.Where("id = ?", userId).First(&models.User{})
 	if result.RowsAffected == 0 {
-		return nil, errors.New("User don't exists")
+		return nil, apierrors.UserNotFoundError{}
 	}
 	urls := []models.Url{}
-	result = s.db.Find(&urls)
+	result = s.db.Where("user_id = ?", userId).Find(&urls)
 	listAll := []*models.ListAllUrls{}
 
 	for _, url := range urls {
