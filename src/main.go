@@ -39,8 +39,14 @@ func main() {
 			"message": "pong",
 		})
 	})
-	r.POST("/users", userController.CreateUser)
+
 	r.POST("/signin", authController.SignIn)
+	users := r.Group("/users")
+	users.POST("", userController.CreateUser)
+	users.Use(common.JwtAuthMiddleware())
+	{
+		users.GET("/urls", urlController.ListUrls)
+	}
 
 	protected := r.Group("/protected")
 	protected.Use(common.JwtAuthMiddleware())

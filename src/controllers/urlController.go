@@ -32,6 +32,30 @@ func (controller *UrlController) RedirectUrl(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, url)
 }
 
+func (controller *UrlController) ListUrls(c *gin.Context) {
+
+	userId, exists := c.Get("sub")
+	if !exists {
+		controller.logger.Info("failed to find jwt's subject")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Cant find subject in jwt"})
+		return
+	}
+	id, _ := strconv.Atoi(userId.(string))
+	urls, err := controller.service.ListUrls(id)
+	switch {
+	case err == nil:
+		c.JSON(http.StatusOK, gin.H{"data": urls})
+		return
+	case errors.Is(err, errors.New("User don't exists")):
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User don't exists"})
+		return
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+}
+
 func (controller *UrlController) CreateUrl(c *gin.Context) {
 	var body *models.CreateUrl
 	c.Bind(&body)

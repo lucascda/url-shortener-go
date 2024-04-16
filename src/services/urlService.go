@@ -34,6 +34,29 @@ func (s *UrlService) GetUrl(hash string) (string, error) {
 	return url.OriginalUrl, nil
 }
 
+func (s *UrlService) ListUrls(userId int) (any, error) {
+
+	result := s.db.Where("id = ?", userId).First(&models.User{})
+	if result.RowsAffected == 0 {
+		return nil, errors.New("User don't exists")
+	}
+	urls := []models.Url{}
+	result = s.db.Find(&urls)
+	listAll := []*models.ListAllUrls{}
+
+	for _, url := range urls {
+		listAll = append(listAll, &models.ListAllUrls{
+			ID:           url.ID,
+			Original_url: url.OriginalUrl,
+			Hash:         url.Hash,
+			CreatedAt:    url.CreatedAt,
+			UpdatedAt:    url.UpdatedAt,
+		})
+	}
+
+	return listAll, nil
+}
+
 func (s *UrlService) CreateUrl(userId int, createUrl *models.CreateUrl) error {
 	if err := s.validator.ValidateCreateUrl(createUrl); err != nil {
 		return err
