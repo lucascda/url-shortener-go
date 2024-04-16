@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"go-url-shortener/src/common"
+	apierrors "go-url-shortener/src/errors"
 	"go-url-shortener/src/models"
 	"go-url-shortener/src/services"
 	"net/http"
@@ -46,8 +47,8 @@ func (controller *UrlController) ListUrls(c *gin.Context) {
 	case err == nil:
 		c.JSON(http.StatusOK, gin.H{"data": urls})
 		return
-	case errors.Is(err, errors.New("User don't exists")):
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User don't exists"})
+	case errors.Is(err, apierrors.UserNotFoundError{}):
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

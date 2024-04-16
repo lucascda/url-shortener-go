@@ -64,7 +64,7 @@ func (s *UrlService) CreateUrl(userId int, createUrl *models.CreateUrl) error {
 
 	result := s.db.Where("id = ?", userId).First(&models.User{})
 	if result.RowsAffected == 0 {
-		return errors.New("User don't exists")
+		return apierrors.UserNotFoundError{}
 	}
 	hash, err := gonanoid.Generate("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", 6)
 	if err != nil {
