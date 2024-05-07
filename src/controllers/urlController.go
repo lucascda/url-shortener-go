@@ -33,6 +33,32 @@ func (controller *UrlController) RedirectUrl(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, url)
 }
 
+func (controller *UrlController) DeleteByHash(c *gin.Context) {
+	userId, exists := c.Get("sub")
+	if !exists {
+		controller.logger.Info("failed to find jwt's subject")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Cant find subject in jwt"})
+		return
+	}
+	id, _ := strconv.Atoi(userId.(string))
+	hash := c.Param("hash")
+	err := controller.service.DeleteByHash(id, hash)
+	switch {
+	case err == nil:
+		c.Status(200)
+		return
+	case errors.Is(err, errors.New("Url not found")):
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	case errors.Is(err, apierrors.UserNotFoundError{}):
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
 func (controller *UrlController) ListUrls(c *gin.Context) {
 
 	userId, exists := c.Get("sub")

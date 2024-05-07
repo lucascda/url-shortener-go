@@ -34,6 +34,20 @@ func (s *UrlService) GetUrl(hash string) (string, error) {
 	return url.OriginalUrl, nil
 }
 
+func (s *UrlService) DeleteByHash(userId int, hash string) error {
+	result := s.db.Where("id = ?", userId).First(&models.User{})
+	if result.RowsAffected == 0 {
+		return apierrors.UserNotFoundError{}
+	}
+	url := models.Url{}
+	result = s.db.Where("hash = ? AND user_id = ?", hash, userId).First(&url)
+	if result.RowsAffected == 0 {
+		return errors.New("Url not found")
+	}
+	s.db.Delete(&url)
+	return nil
+}
+
 func (s *UrlService) ListUrls(userId int) (any, error) {
 
 	result := s.db.Where("id = ?", userId).First(&models.User{})

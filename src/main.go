@@ -58,6 +58,7 @@ func main() {
 	urls.Use(common.JwtAuthMiddleware())
 	{
 		urls.POST("", urlController.CreateUrl)
+		urls.DELETE("/:hash", urlController.DeleteByHash)
 
 	}
 	r.Run()
